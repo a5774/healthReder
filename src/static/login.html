@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <script src="./vue.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+        }
+
+        #box {
+            display: flex;
+            flex-flow: column wrap;
+        }
+
+        input {
+            height: 22px;
+            width: 220px;
+        }
+
+        input[type=button] {
+            width: 228px;
+            height: 30px;
+            /* cursor: not-allowed; */
+        }
+
+        span {
+            height: 30px;
+            line-height: 30px;
+            color: red;
+        }
+
+        .sendWin {
+            height: 70px;
+            width: 25vw;
+            background-color: rgb(47, 196, 104);
+            position: absolute;
+            top: 0px;
+            /* transform: translateY(70px) */
+            transition: top 1s;
+        }
+
+        .title {
+            /* text-align: left; */
+            padding: 8px 0px;
+            text-align: center;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- <div class="sendWin"></div> -->
+    <div id='box'>
+        <div class="title">自动健康汇报</div>
+        <div><input type="text" autocomplete="on" v-model="username" placeholder="学号"></div>
+        <span>{{tip}}</span>
+        <div> <input type="password" v-model="password" placeholder="最后6位"></div>
+        <span></span>
+        <input type="button" ref=button @click=upload value="submit">
+
+    </div>
+    <script>
+        let vm = new Vue({
+            el: "#box",
+            data: {
+                username: "",
+                password: "",
+                tip:''
+            },
+            methods: {
+                upload() {
+                    let data = {
+                        stuCode: this.username.trim(),
+                        las6: this.password.trim()
+                    }
+                    console.log(data);
+                    let url = "http://laodongwang.xyz:9090/info"
+                    let req = new Request(url, {
+                        method: "POST",
+                        // mode:"cors",
+                        headers: {
+                            "Content-Type": 'application/json'
+                        },
+                        body: JSON.stringify(data)
+                    })
+                    fetch(req)
+                        // resp.header
+                        .then(resp => resp.text())
+                        .then(res => {
+                            console.log(res);
+                            if (res) this.tip = res
+                        })
+                }
+            },
+        })
+    </script>
+
+</body>
+
+</html>

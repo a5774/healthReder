@@ -1,0 +1,136 @@
+//power_by_laofang
+// const dotenv = require('dotenv')
+// dotenv.config()
+let Repurl = 'https://www.jxusptpay.com/SpReportData/reportdata/report'
+let Logurl = 'https://www.jxusptpay.com/SpReportData/reportdata/login'
+class Health {
+    constructor(studentCode, lst6) {
+        this.studentCode = studentCode
+        this.IDNo = lst6
+        this.main()
+    }
+    async Log() {
+        // Log
+        return new Promise((resolve, rej) => {
+            let body_req_Log = `studentCode=${this.studentCode}&IDNo=${this.IDNo}`
+            // console.log(body_req_Log);
+            // option > url
+            let req_Log = require('https').request(Logurl, {
+                method: "POST",
+                headers: {
+                    "Content-type": 'application/x-www-form-urlencoded;charset=UTF-8'
+                },
+                protocol: 'https:',
+            }, (res) => {
+                res.setEncoding('utf-8')
+                res.on('data', data => {
+                    console.log( data );
+                    console.log(JSON.parse(data));
+                    resolve(JSON.parse(data))
+                })
+                // 压根没有cookie_token验证
+                // console.log(res.headers['set-cookie']);
+            })
+            req_Log.write(body_req_Log)
+            // if use 'GET then auto_end_close_request 
+            req_Log.end()
+            req_Log.on('error', () => {
+                console.log("req_Log_error");
+            })
+        })
+    }
+    async Rep(data) {
+        // Rep
+        let JSON_Info = {
+            "studentCode": `${data.studentCode}`,
+            "classNo": `${data.classNo}`,
+            "departmentCode": `${data.departmentCode}`,
+            "depName": `${data.depName}`,
+            "acaID": `${data.acaID}`,
+            "bodystatus": `${data?.bodystatus ?? '正常'}`,
+            "animalHeat": data.animalHeat,
+            "address": `${data.address}`,
+            "isContactHubeiBack": data.isContactPatient,
+            "isContactPatient": data.isContactHubeiBack,
+            "othercase": `${data.othercase}`,
+            "reporttime": `${data.opttime?.split(' ')[0] ?? new Date().toJSON().split('T')[0]}`,
+            "morTem": data.morTem,
+            "illsymptom": data.illsymptom,
+            "quarantine": data.quarantine,
+            "quarantinePlace": data.quarantinePlace,
+            "outStartTime": data.outStartTime,
+            "outEndTime": data.outEndTime,
+            "vehicle": data.vehicle,
+            "trainNumAndseatNum": data.trainNumAndseatNum
+        }
+        // let JSON_Info = {"studentCode":"202005619","classNo":"C200104","departmentCode":"01","depName":"软件工程学院","acaID":"2","bodystatus":"正常","animalHeat":null,"address":"银河系地球","isContactHubeiBack":"0","isContactPatient":"0","othercase":"auto","reporttime":`${new Date().toJSON().split('T')[0]}`,"morTem":"","illsymptom":null,"quarantine":null,"quarantinePlace":null,"outStartTime":null,"outEndTime":null,"vehicle":null,"trainNumAndseatNum":null}
+        let body_req_Rep = JSON.stringify(JSON_Info)
+        // console.log(body_req_Rep);
+        console.log(JSON_Info)
+        let req_Rep = require('https').request(Repurl, {
+            method: 'POST',
+            headers: {
+                'Content-type': 'application/json',
+                // 'Cookie': 'studentCode=202005619; IDNo=193614; JSESSIONID=87BD1CF55D3F607539C729A3663584C0; STUDENTCODE_COOKIE_DATA=112ebe2aab03e9fd300ce7c6aa03d24e; STUDENTCODE_COOKIE=202005619; studentCode=202005619; STUDENT_LOGIN_TOKEN=3c704247818234376b7dc34c18be5a7512d9d4ae946fe995a1efc3e0931ac3d059642a8f9018f3d81b8c6230d1ff0969b5961b8ee1eb283c14e94f235dc0bf1f530d9555af9b5ab78ead774a6e9fb7ce; STUDENT_LOGIN_TOKEN_OLD=3c704247818234376b7dc34c18be5a7512d9d4ae946fe995a1efc3e0931ac3d059642a8f9018f3d81b8c6230d1ff0969b5961b8ee1eb283c14e94f235dc0bf1f530d9555af9b5ab78ead774a6e9fb7ce'
+            },
+            protocol: 'https:'
+        }, res => {
+            res.setEncoding('utf-8')
+            res.on('data', (data) => {
+                //console.log(data);
+                fs.writeFile("./single.log",`${this.studentCode}-${data}:${new Date()}\n\r`,{flag:'a+',Encoding:'utf-8'},err=>{
+                if (err) console.log(err) 
+                })
+            })
+        })
+        req_Rep.write(body_req_Rep)
+        req_Rep.end()
+        req_Rep.on('error', () => {
+            console.log("req_Rep_error");
+        })
+
+    }
+    async main(){
+        try {
+            let healthInfo = await this.Log()
+            if (healthInfo.status == 200) {
+                await this.Rep(healthInfo.data)
+            } else {
+                throw new Error("Login_faild_check_info_is_right")
+            }
+        }catch(err){    
+            console.log( err );
+        }
+    }
+}
+// time 
+// ervey day for 8am 
+let time = '1 0 8 * * *'
+// let time = '* * * * * *'
+const schedule = require('node-schedule')
+const fs = require('fs')
+
+const job = schedule.scheduleJob(time,()=>{
+
+    fs.readFile('./user.json','utf-8',(err,data)=>{
+        for (const iter of JSON.parse(data)) {
+            // console.log(iter);
+            new Health(iter.stuCode,iter.las6)
+        } 
+       
+    })
+    // 使用require将无法实时读写
+   /*  for (const iter of require('./user.json')) {
+        console.log(iter);
+        // new Health(iter.stuCode,iter.las6)
+    }  */
+})
+
+/* 
+task(202005451,'05421X')
+task(202005619,'193614')
+task(202005469,'062712') */
+
+
+
+
