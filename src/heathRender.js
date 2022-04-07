@@ -4,6 +4,7 @@
 let fs = require('fs')
 let Repurl = 'https://www.jxusptpay.com/SpReportData/reportdata/report'
 let Logurl = 'https://www.jxusptpay.com/SpReportData/reportdata/login'
+// let 
 class Health {
     constructor(studentCode, lst6) {
         this.studentCode = studentCode
@@ -77,7 +78,7 @@ class Health {
             res.on('data', (data) => {
                 // for the same file write but not wait for callback is no safe 
                 // use Stream
-                fs.createWriteStream('./single.log',{
+                fs.createWriteStream('./log/healthSub.log',{
                     flags:"a+",
                     encoding:'utf-8',
                 }).write(`${this.studentCode}-${data}:${new Date()}\n\r`,err=>{
@@ -107,8 +108,8 @@ class Health {
 }
 // time 
 // ervey day for 8am 
-let time = '1 0 8 * * *'
-// let time = '* * * * * *'
+// let time = '1 0 8 * * *'
+let time = '* * * * * *'
 const schedule = require('node-schedule')
 const job = schedule.scheduleJob(time,()=>{
 

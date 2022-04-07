@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <script src="./vue.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+        }
+
+        #box {
+            display: flex;
+            flex-flow: column wrap;
+            position: relative;
+        }
+
+        input {
+            height: 22px;
+            width: 220px;
+        }
+
+        input[type=button] {
+            width: 228px;
+            height: 30px;
+            /* cursor: not-allowed; */
+        }
+
+        span {
+            height: 30px;
+            line-height: 30px;
+            color: red;
+        }
+
+        .sendWin {
+            height: 70px;
+            width: 25vw;
+            background-color: rgb(47, 196, 104);
+            position: absolute;
+            top: 0px;
+            /* transform: translateY(70px) */
+            transition: top 1s;
+        }
+        
+        .title {
+            /* text-align: left; */
+            padding: 8px 0px;
+            text-align: center;
+            margin-bottom: 10px;
+            vertical-align:baseline;
+        }
+
+        .ioc {
+            position: absolute;
+            right: 0;
+            vertical-align:baseline;
+        }
+
+        @font-face {
+            font-family: feedback-iconfont;
+            src: url("//at.alicdn.com/t/font_1031158_u69w8yhxdu.woff2?t=1630033759944") format("woff2"), url("//at.alicdn.com/t/font_1031158_u69w8yhxdu.woff?t=1630033759944") format("woff"), url("//at.alicdn.com/t/font_1031158_u69w8yhxdu.ttf?t=1630033759944") format("truetype");
+        }
+    </style>
+</head>
+
+<body>
+    <!-- <div class="sendWin"></div> -->
+    <div id='box'>
+        <template v-if="display">
+            <div class="title">自动健康汇报
+                <span class="ioc" @click="switch_item">
+                    <svg t="1649312385045" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg"
+                        p-id="2200" xmlns:xlink="http://www.w3.org/1999/xlink" width="20" height="20">
+                        <path
+                            d="M234.666667 430.933333H128l85.333333-81.066666L345.6 213.333333l51.2 51.2-81.066667 81.066667H896V426.666667H234.666667v4.266666zM793.6 554.666667H896l-85.333333 81.066666-132.266667 132.266667-51.2-51.2 81.066667-81.066667H128V554.666667h665.6z"
+                            fill="#444444" p-id="2201"></path>
+                    </svg>
+                </span>
+            </div>
+            <div><input type="text" autocomplete="on" v-model="username" placeholder="学号"></div>
+            <span>{{tip}}</span>
+            <div> <input type="password" v-model="password" placeholder="最后6位"></div>
+            <span></span>
+            <input type="button" ref=button @click=upload value="submit">
+        </template>
+        <template v-else=>
+            <div class="title">自动上课签到
+                <span class="ioc" @click="switch_item">
+                    <svg t="1649312385045" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg"
+                        p-id="2200" xmlns:xlink="http://www.w3.org/1999/xlink" width="20" height="20">
+                        <path
+                            d="M234.666667 430.933333H128l85.333333-81.066666L345.6 213.333333l51.2 51.2-81.066667 81.066667H896V426.666667H234.666667v4.266666zM793.6 554.666667H896l-85.333333 81.066666-132.266667 132.266667-51.2-51.2 81.066667-81.066667H128V554.666667h665.6z"
+                            fill="#444444" p-id="2201"></path>
+                    </svg>
+                </span>
+            </div>
+            <div><input type="text" autocomplete="on" v-model="username" placeholder="学号"></div>
+            <span>{{tip}}</span>
+            <div> <input type="password" v-model="password" placeholder="校园通密码"></div>
+            <span>{{safe}}{{dis_safe}}</span>
+            <input type="button" ref=button @click=upload value="submit">
+        </template>
+    </div>
+    <script>
+        let vm = new Vue({
+            el: "#box",
+            data: {
+                display: true,
+                username: "",
+                password: "",
+                tip: '',
+                safe:'均已加密'
+            },
+            methods: {
+                switch_item(e){
+                    this.display = !this.display
+                    this.tip = null
+                },
+                upload() {
+                    let data = {
+                        stuCode: this.username.trim(),
+                        las6: this.password.trim()
+                    }
+                    Object.assign(data,{flag:this.display})
+                    // console.log(data );
+                    let url = "http://laodongwang.xyz:9090/info"
+                    // let url = "http://127.0.0.1:9090/info"
+                    let req = new Request(url, {
+                        method: "POST",
+                        // mode:"cors",
+                        headers: {
+                            "Content-Type": 'application/json'
+                        },
+                        body: JSON.stringify(data)
+                    })
+                    fetch(req)
+                        // resp.header
+                        .then(resp => resp.text())
+                        .then(res => {
+                            console.log(res);
+                            if (res) this.tip = res
+                        })
+                }
+            },
+            computed:{
+                dis_safe(){
+                    setTimeout(()=>{
+                        this.safe = ''
+                    },3000)
+                }
+            }
+        })
+    </script>
+
+</body>
+
+</html>

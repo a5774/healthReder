@@ -1,19 +1,23 @@
 //power_by_laofang
 // const dotenv = require('dotenv')
 // dotenv.config()
+let fs = require('fs')
 let Repurl = 'https://www.jxusptpay.com/SpReportData/reportdata/report'
 let Logurl = 'https://www.jxusptpay.com/SpReportData/reportdata/login'
+// let 
 class Health {
     constructor(studentCode, lst6) {
         this.studentCode = studentCode
         this.IDNo = lst6
         this.main()
     }
+    async Check(){
+        
+    }
     async Log() {
         // Log
         return new Promise((resolve, rej) => {
             let body_req_Log = `studentCode=${this.studentCode}&IDNo=${this.IDNo}`
-            // console.log(body_req_Log);
             // option > url
             let req_Log = require('https').request(Logurl, {
                 method: "POST",
@@ -49,7 +53,7 @@ class Health {
             "acaID": `${data.acaID}`,
             "bodystatus": `${data?.bodystatus ?? '正常'}`,
             "animalHeat": data.animalHeat,
-            "address": `${data.address}`,
+            "address": `${data.address ?? ''}`,
             "isContactHubeiBack": data.isContactPatient,
             "isContactPatient": data.isContactHubeiBack,
             "othercase": `${data.othercase}`,
@@ -63,9 +67,7 @@ class Health {
             "vehicle": data.vehicle,
             "trainNumAndseatNum": data.trainNumAndseatNum
         }
-        // let JSON_Info = {"studentCode":"202005619","classNo":"C200104","departmentCode":"01","depName":"软件工程学院","acaID":"2","bodystatus":"正常","animalHeat":null,"address":"银河系地球","isContactHubeiBack":"0","isContactPatient":"0","othercase":"auto","reporttime":`${new Date().toJSON().split('T')[0]}`,"morTem":"","illsymptom":null,"quarantine":null,"quarantinePlace":null,"outStartTime":null,"outEndTime":null,"vehicle":null,"trainNumAndseatNum":null}
         let body_req_Rep = JSON.stringify(JSON_Info)
-        // console.log(body_req_Rep);
         console.log(JSON_Info)
         let req_Rep = require('https').request(Repurl, {
             method: 'POST',
@@ -77,9 +79,13 @@ class Health {
         }, res => {
             res.setEncoding('utf-8')
             res.on('data', (data) => {
-                //console.log(data);
-                fs.writeFile("./single.log",`${this.studentCode}-${data}:${new Date()}\n\r`,{flag:'a+',Encoding:'utf-8'},err=>{
-                if (err) console.log(err) 
+                // for the same file write but not wait for callback is no safe 
+                // use Stream
+                fs.createWriteStream('./log/healthSub.log',{
+                    flags:"a+",
+                    encoding:'utf-8',
+                }).write(`${this.studentCode}-${data}:${new Date()}\n\r`,err=>{
+                    if (err) console.log(err) 
                 })
             })
         })
@@ -105,11 +111,9 @@ class Health {
 }
 // time 
 // ervey day for 8am 
-let time = '1 0 8 * * *'
-// let time = '* * * * * *'
+// let time = '1 0 8 * * *'
+let time = '* * * * * *'
 const schedule = require('node-schedule')
-const fs = require('fs')
-
 const job = schedule.scheduleJob(time,()=>{
 
     fs.readFile('./user.json','utf-8',(err,data)=>{
@@ -125,11 +129,6 @@ const job = schedule.scheduleJob(time,()=>{
         // new Health(iter.stuCode,iter.las6)
     }  */
 })
-
-/* 
-task(202005451,'05421X')
-task(202005619,'193614')
-task(202005469,'062712') */
 
 
 
