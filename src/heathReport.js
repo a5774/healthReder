@@ -2,6 +2,7 @@
 // const dotenv = require('dotenv')
 // dotenv.config()
 let fs = require('fs')
+let https = require('https')
 let Repurl = 'https://www.jxusptpay.com/SpReportData/reportdata/report'
 let Logurl = 'https://www.jxusptpay.com/SpReportData/reportdata/login'
 // let 
@@ -16,7 +17,7 @@ class Health {
         return new Promise((resolve, rej) => {
             let body_req_Log = `studentCode=${this.studentCode}&IDNo=${this.IDNo}`
             // option > url
-            let req_Log = require('https').request(Logurl, {
+            let req_Log = https.request(Logurl, {
                 method: "POST",
                 headers: {
                     "Content-type": 'application/x-www-form-urlencoded;charset=UTF-8'
@@ -25,7 +26,7 @@ class Health {
             }, (res) => {
                 res.setEncoding('utf-8')
                 res.on('data', data => {
-                    console.log( data );
+                    console.log(data);
                     console.log(JSON.parse(data));
                     resolve(JSON.parse(data))
                 })
@@ -66,7 +67,7 @@ class Health {
         }
         let body_req_Rep = JSON.stringify(JSON_Info)
         console.log(JSON_Info)
-        let req_Rep = require('https').request(Repurl, {
+        let req_Rep = https.request(Repurl, {
             method: 'POST',
             headers: {
                 'Content-type': 'application/json',
@@ -75,14 +76,18 @@ class Health {
             protocol: 'https:'
         }, res => {
             res.setEncoding('utf-8')
-            res.on('data', (data) => {
+            res.on('data', (data_) => {
+                let config_main = JSON.parse(fs.readFileSync('./user/userMain.json', { encoding: 'utf-8', flag: "r" }))
+                let user = config_main.find(self=>{
+                    return self.stuCode == this.studentCode
+                })
                 // for the same file write but not wait for callback is no safe 
                 // use Stream
-                fs.createWriteStream('./log/healthSub.log',{
-                    flags:"a+",
-                    encoding:'utf-8',
-                }).write(`${this.studentCode}-${data}:${new Date()}\n\r`,err=>{
-                    if (err) console.log(err) 
+                fs.createWriteStream('./log/healthSub.log', {
+                    flags: "a+",
+                    encoding: 'utf-8',
+                }).write(`${ user ? user.name : '某个不透露名字的小伙子'}-${this.studentCode}-${JSON.parse(data_.toString()).msg}-${new Date()}\r\n`, err => {
+                    if (err) console.log(err)
                 })
             })
         })
@@ -93,7 +98,7 @@ class Health {
         })
 
     }
-    async main(){
+    async main() {
         try {
             let healthInfo = await this.Log()
             if (healthInfo.status == 200) {
@@ -101,8 +106,8 @@ class Health {
             } else {
                 throw new Error("Login_faild_check_info_is_right")
             }
-        }catch(err){    
-            console.log( err );
+        } catch (err) {
+            console.log(err);
         }
     }
 }
@@ -111,20 +116,19 @@ class Health {
 // let time = '1 0 8 * * *'
 let time = '* * * * * *'
 const schedule = require('node-schedule')
-const job = schedule.scheduleJob(time,()=>{
-
-    fs.readFile('./user.json','utf-8',(err,data)=>{
+const job = schedule.scheduleJob(time, () => {
+    fs.readFile('./user/user.json', 'utf-8', (err, data) => {
         for (const iter of JSON.parse(data)) {
             // console.log(iter);
-            new Health(iter.stuCode,iter.las6)
-        } 
-       
+            new Health(iter.stuCode, iter.las6)
+        }
+
     })
     // 使用require将无法实时读写
-   /*  for (const iter of require('./user.json')) {
-        console.log(iter);
-        // new Health(iter.stuCode,iter.las6)
-    }  */
+    /*  for (const iter of require('./user.json')) {
+         console.log(iter);
+         // new Health(iter.stuCode,iter.las6)
+     }  */
 })
 
 

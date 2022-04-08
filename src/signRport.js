@@ -1,16 +1,17 @@
 const FormData = require('form-data');
 const http = require('http')
 const fs = require('fs')
-const {pswdCipher,pswdDecipher} = require('./crypto/crypto')
+// const {pswdCipher,pswdDecipher} = require('./crypto/crypto')
 let sign_id_url = 'http://www.jxusptpay.com/StudentApp/SignIn/StudentSignin/GetStudentSignIn?a=a'
 let check_url = 'http://www.jxusptpay.com/StudentApp/SignIn/StudentSignin/EpidemicSituationSignIn'
 let app_Log_url = 'http://www.jxusptpay.com/StudentApp/Login/Login/StudentLogin'
-// let token_login_url = 
+// 无实际用处
+// let token_log_url = 'http://www.jxusptpay.com/StudentApp/Login/Login/StudentTokenLogin'
 class SignRender {
     constructor(stuCode, passwd) {
         this.stuCode = stuCode
         this.passwd = passwd
-        this.main()
+        // this.main()
     }
     async getResBody() {
         return new Promise((resolve, rej) => {
@@ -68,7 +69,6 @@ class SignRender {
                 method:"POST",
                 headers:{
                     'Content-type':`multipart/form-data; boundary=${form_data.getBoundary()}`,
-                    // 'Conten-Type':`multipart/form-data; boundary=------WebKitFormBoundary8edn0iT3E7rmdS2a`,
                     'Cookie':`${data_.cookies}`
                 }
             },res=>{
@@ -76,26 +76,24 @@ class SignRender {
                     fs.createWriteStream('./log/signCheck.log',{
                         flags:"a+",
                         encoding:'utf-8',
-                    }).write(`${data_.data.name}-${this.stuCode}-${JSON.parse(data.toString()).msg}:${new Date()}\n\r`,err=>{
+                    }).write(`${data_.data.name}-${this.stuCode}-${JSON.parse(data.toString()).msg}:${new Date()}\r\n`,err=>{
                         if (err) console.log(err) 
                     })
                 })
             })
-            // let s = '------WebKitFormBoundary8edn0iT3E7rmdS2a\r\nContent-Disposition: form-data; name="signinId"\r\n\r\n1315998\r\n------WebKitFormBoundary8edn0iT3E7rmdS2aContent-Disposition: form-data; name="itemId"\r\n\r\n1\r\n------WebKitFormBoundary8edn0iT3E7rmdS2a--\r\n'
-            // req.write(s)
-            // console.log(req);
             form_data.pipe(req)
             req.end()
     }
     async main(){
         try{
+            // if()
             // login get cookie 
             let data = await this.getResBody();
-            console.log(data);
+            // console.log(data);
             if (!(data.status ^ 200)){
                 // get signID
              let signID = await this.getSignID(data)
-             console.log(signID);
+            //  console.log(signID);
                 if(!(signID.status ^ 200)){
                     // check info 
                    await this.check(data,signID.data)
@@ -106,14 +104,15 @@ class SignRender {
         }
     }
 }
-// let time = '1 0 8 * * *'
-let time = '* * * * * *'
+let time = '1 0 8 * * *'
+// let time = '* * * * * *'
 const schedule = require('node-schedule')
 const job = schedule.scheduleJob(time,()=>{
     fs.readFile('./user/userMain.json','utf-8',(err,data)=>{
         for (const iter of JSON.parse(data)) {
             // console.log(iter);
-            new SignRender(iter.stuCode,iter.las6)
+            // new SignRender(iter.stuCode,iter.las6)
+            new SignRender(iter.stuCode,iter.las6).main()
         } 
        
     })
@@ -121,11 +120,11 @@ const job = schedule.scheduleJob(time,()=>{
 /* console.log( Buffer.from("1315998"));
 console.log( Buffer.from("\r\n"));
 console.log( Buffer.from("\r")) */
-/* module.exports = { 
+module.exports = { 
     app_login: SignRender,
-    login_url: app_Log_url
-} */
-// console.log( s);
+    login_url: app_Log_url 
+}
+
 
 
 
