@@ -1,11 +1,11 @@
 //power_by_laofang
 // const dotenv = require('dotenv')
 // dotenv.config()
-let fs = require('fs')
-let https = require('https')
+const fs = require('fs')
+const https = require('https')
+const path = require('path')
 let Repurl = 'https://www.jxusptpay.com/SpReportData/reportdata/report'
-let Logurl = 'https://www.jxusptpay.com/SpReportData/reportdata/login'
-// let 
+let Logurl = 'https://www.jxusptpay.com/SpReportData/reportdata/login' 
 class Health {
     constructor(studentCode, lst6) {
         this.studentCode = studentCode
@@ -26,7 +26,6 @@ class Health {
             }, (res) => {
                 res.setEncoding('utf-8')
                 res.on('data', data => {
-                    console.log(data);
                     console.log(JSON.parse(data));
                     resolve(JSON.parse(data))
                 })
@@ -77,16 +76,16 @@ class Health {
         }, res => {
             res.setEncoding('utf-8')
             res.on('data', (data_) => {
-                let config_main = JSON.parse(fs.readFileSync('./user/userMain.json', { encoding: 'utf-8', flag: "r" }))
+                let config_main = JSON.parse(fs.readFileSync(path.resolve(__dirname,'./user/userMain.json'), { encoding: 'utf-8', flag: "r" }))
                 let user = config_main.find(self=>{
                     return self.stuCode == this.studentCode
                 })
                 // for the same file write but not wait for callback is no safe 
                 // use Stream
-                fs.createWriteStream('./log/healthSub.log', {
+                fs.createWriteStream(path.resolve(__dirname,'./log/healthSub.log'), {
                     flags: "a+",
                     encoding: 'utf-8',
-                }).write(`${ user ? user.name : '某个不透露名字的小伙子'}-${this.studentCode}-${JSON.parse(data_.toString()).msg}-${new Date()}\r\n`, err => {
+                }).write(`${ user ? user.name : '某个不透露名字的小伙子'}-${this.studentCode}-${JSON.parse(data_.toString()).msg}-${new Date().toJSON()}\n\r`, err => {
                     if (err) console.log(err)
                 })
             })
@@ -113,11 +112,11 @@ class Health {
 }
 // time 
 // ervey day for 8am 
-// let time = '1 0 8 * * *'
-let time = '* * * * * *'
+ let time = '1 0 8 * * *'
+//let time = '* * * * * *'
 const schedule = require('node-schedule')
 const job = schedule.scheduleJob(time, () => {
-    fs.readFile('./user/user.json', 'utf-8', (err, data) => {
+    fs.readFile(path.resolve(__dirname,'./user/user.json'), 'utf-8', (err, data) => {
         for (const iter of JSON.parse(data)) {
             // console.log(iter);
             new Health(iter.stuCode, iter.las6)

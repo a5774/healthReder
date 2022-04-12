@@ -1,12 +1,20 @@
 const FormData = require('form-data');
 const http = require('http')
 const fs = require('fs')
+const events = require('events')
+const path = require('path');
+const {pswdDecipher,key,vi} = require('./crypto/crypto')
 // const {pswdCipher,pswdDecipher} = require('./crypto/crypto')
 let sign_id_url = 'http://www.jxusptpay.com/StudentApp/SignIn/StudentSignin/GetStudentSignIn?a=a'
 let check_url = 'http://www.jxusptpay.com/StudentApp/SignIn/StudentSignin/EpidemicSituationSignIn'
 let app_Log_url = 'http://www.jxusptpay.com/StudentApp/Login/Login/StudentLogin'
 // 无实际用处
 // let token_log_url = 'http://www.jxusptpay.com/StudentApp/Login/Login/StudentTokenLogin'
+let Eitter = new events();
+Eitter.once('signLog',data=>{
+    console.log(data);
+    fs.writeFileSync(path.resolve(__dirname,'./log/signCheck.log'),'周末你也签到\npm',{encoding:'utf-8',flag:'a'})
+})
 class SignRender {
     constructor(stuCode, passwd) {
         this.stuCode = stuCode
@@ -73,10 +81,11 @@ class SignRender {
                 }
             },res=>{
                 res.addListener('data',data=>{
-                    fs.createWriteStream('./log/signCheck.log',{
+                    console.log(data.toString());
+                    fs.createWriteStream(path.resolve(__dirname,'./log/signCheck.log'),{
                         flags:"a+",
                         encoding:'utf-8',
-                    }).write(`${data_.data.name}-${this.stuCode}-${JSON.parse(data.toString()).msg}:${new Date()}\r\n`,err=>{
+                    }).write(`${data_.data.name}-${this.stuCode}-${JSON.parse(data.toString()).msg}:${new Date().toJSON()}\n`,err=>{
                         if (err) console.log(err) 
                     })
                 })
@@ -86,17 +95,18 @@ class SignRender {
     }
     async main(){
         try{
-            // if()
             // login get cookie 
             let data = await this.getResBody();
-            // console.log(data);
+            console.log(data);
             if (!(data.status ^ 200)){
                 // get signID
              let signID = await this.getSignID(data)
-            //  console.log(signID);
+             console.log(signID);
                 if(!(signID.status ^ 200)){
                     // check info 
                    await this.check(data,signID.data)
+                }else{
+                    Eitter.emit('signLog',signID)
                 }
              }
         }catch(err){
@@ -104,15 +114,14 @@ class SignRender {
         }
     }
 }
-let time = '1 0 8 * * *'
-// let time = '* * * * * *'
+let time = '1 31 8 * * *'
+//let time = '* * * * * *'
 const schedule = require('node-schedule')
 const job = schedule.scheduleJob(time,()=>{
-    fs.readFile('./user/userMain.json','utf-8',(err,data)=>{
+    fs.readFile(path.resolve(__dirname,'./user/userMain.json'),'utf-8',(err,data)=>{
         for (const iter of JSON.parse(data)) {
-            // console.log(iter);
             // new SignRender(iter.stuCode,iter.las6)
-            new SignRender(iter.stuCode,iter.las6).main()
+            new SignRender(iter.stuCode,pswdDecipher(iter.las6,key,vi)).main()
         } 
        
     })

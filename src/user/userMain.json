@@ -1,9 +1,35 @@
 [
 	{
 		"stuCode": "202005619",
-		"las6": "qq3226044217",
+		"las6": "660ab11555431d311b49b4f595aa8c3c",
 		"flag": false,
 		"name": "方文衡",
-		"creTime": "Fri Apr 08 2022 23:55:30 GMT+0800 (中国标准时间)"
+		"creTime": "2022-04-11T03:06:13.576Z"
+	},
+	{
+		"stuCode": "202005451",
+		"las6": "1c0592dc5d3437dbfbec9300f4deb957",
+		"flag": false,
+		"name": "谢地市",
+		"creTime": "2022-04-11T03:07:24.083Z"
+	},
+	{
+		"stuCode": "202003324",
+		"las6": "81657ff48babfcbaf91d00fd4ad64b7d",
+		"flag": false,
+		"name": "李海东",
+		"creTime": "2022-04-11T03:07:47.534Z"
+	},
+	{
+		"stuCode": "202005617",
+		"las6": "d0d931d8f537492b1af714b3d194ff52",
+		"flag": false,
+		"name": "蒋昌盛",
+		"creTime": "2022-04-11T03:08:04.007Z"
+	},
+	{
+		"stuCode": "202005217",
+		"las6": "2c69c69adb26f9c147c2003f143b595b",
+		"flag": false
 	}
 ]
