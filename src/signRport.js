@@ -3,7 +3,7 @@ const http = require('http')
 const fs = require('fs')
 const events = require('events')
 const path = require('path');
-const {pswdDecipher,key,vi} = require('./crypto/crypto')
+const { pswdDecipher, key, vi } = require('./crypto/crypto')
 // const {pswdCipher,pswdDecipher} = require('./crypto/crypto')
 let sign_id_url = 'http://www.jxusptpay.com/StudentApp/SignIn/StudentSignin/GetStudentSignIn?a=a'
 let check_url = 'http://www.jxusptpay.com/StudentApp/SignIn/StudentSignin/EpidemicSituationSignIn'
@@ -11,9 +11,9 @@ let app_Log_url = 'http://www.jxusptpay.com/StudentApp/Login/Login/StudentLogin'
 // 无实际用处
 // let token_log_url = 'http://www.jxusptpay.com/StudentApp/Login/Login/StudentTokenLogin'
 let Eitter = new events();
-Eitter.once('signLog',data=>{
+Eitter.once('signLog', data => {
     console.log(data);
-    fs.writeFileSync(path.resolve(__dirname,'./log/signCheck.log'),'周末你也签到\npm',{encoding:'utf-8',flag:'a'})
+    fs.writeFileSync(path.resolve(__dirname, './log/signCheck.log'), '周末你也签到\npm', { encoding: 'utf-8', flag: 'a' })
 })
 class SignRender {
     constructor(stuCode, passwd) {
@@ -68,70 +68,78 @@ class SignRender {
             req.end()
         })
     }
-    async check(data_,signID){
+    async check(data_, signID) {
         // console.log( signID.id,signID.itemId);
-            let form_data = new FormData({maxDataSize:4096})
-            form_data.append("signinId",`${signID.id}`)
-            form_data.append("itemId",`${signID.itemId}`)
-            let req = http.request(check_url,{
-                method:"POST",
-                headers:{
-                    'Content-type':`multipart/form-data; boundary=${form_data.getBoundary()}`,
-                    'Cookie':`${data_.cookies}`
-                }
-            },res=>{
-                res.addListener('data',data=>{
-                    console.log(data.toString());
-                    fs.createWriteStream(path.resolve(__dirname,'./log/signCheck.log'),{
-                        flags:"a+",
-                        encoding:'utf-8',
-                    }).write(`${data_.data.name}-${this.stuCode}-${JSON.parse(data.toString()).msg}:${new Date().toJSON()}\n`,err=>{
-                        if (err) console.log(err) 
-                    })
+        let form_data = new FormData({ maxDataSize: 4096 })
+        form_data.append("signinId", `${signID.id}`)
+        form_data.append("itemId", `${signID.itemId}`)
+        let req = http.request(check_url, {
+            method: "POST",
+            headers: {
+                'Content-type': `multipart/form-data; boundary=${form_data.getBoundary()}`,
+                'Cookie': `${data_.cookies}`
+            }
+        }, res => {
+            res.addListener('data', data => {
+                console.log(data.toString());
+                fs.createWriteStream(path.resolve(__dirname, './log/signCheck.log'), {
+                    flags: "a+",
+                    encoding: 'utf-8',
+                }).write(`${data_.data.name}-${this.stuCode}-${JSON.parse(data.toString()).msg}:${new Date().toJSON()}\n`, err => {
+                    if (err) console.log(err)
                 })
             })
-            form_data.pipe(req)
-            req.end()
+        })
+        form_data.pipe(req)
+        req.end()
     }
-    async main(){
-        try{
+    async main() {
+        try {
             // login get cookie 
             let data = await this.getResBody();
             console.log(data);
-            if (!(data.status ^ 200)){
+            if (!(data.status ^ 200)) {
                 // get signID
-             let signID = await this.getSignID(data)
-             console.log(signID);
-                if(!(signID.status ^ 200)){
+                let signID = await this.getSignID(data)
+                console.log(signID);
+                if (!(signID.status ^ 200)) {
                     // check info 
-                   await this.check(data,signID.data)
-                }else{
-                    Eitter.emit('signLog',signID)
+                    await this.check(data, signID.data)
+                } else {
+                    Eitter.emit('signLog', signID)
                 }
-             }
-        }catch(err){
-            if(err) console.log(err);
+            }
+        } catch (err) {
+            if (err) console.log(err);
         }
     }
 }
-let time = '1 31 8 * * *'
-//let time = '* * * * * *'
+let time = `${Math.floor(Math.random() * (60 - 1)) + 1} ${Math.floor(Math.random() * 5)} 8 * * *`
+// let time = '* * * * * *'
 const schedule = require('node-schedule')
-const job = schedule.scheduleJob(time,()=>{
-    fs.readFile(path.resolve(__dirname,'./user/userMain.json'),'utf-8',(err,data)=>{
+const job = schedule.scheduleJob(time, () => {
+    fs.readFile(path.resolve(__dirname, './user/userMain.json'), 'utf-8', (err, data) => {
         for (const iter of JSON.parse(data)) {
-            // new SignRender(iter.stuCode,iter.las6)
-            new SignRender(iter.stuCode,pswdDecipher(iter.las6,key,vi)).main()
-        } 
-       
+            if (iter.isEnable) {
+                // console.log(iter.stuCode);
+                new SignRender(iter.stuCode, pswdDecipher(iter.las6, key, vi)).main()
+            }
+        }
     })
+    return "doen"
+})
+job.addListener('success', data => {
+    console.log(data);
+    job.cancel()
+    let time_ = `${Math.floor(Math.random() * (60 - 1)) + 1} ${Math.floor(Math.random() * 5)} 8 * * *`
+    job.reschedule(time_)
 })
 /* console.log( Buffer.from("1315998"));
 console.log( Buffer.from("\r\n"));
 console.log( Buffer.from("\r")) */
-module.exports = { 
+module.exports = {
     app_login: SignRender,
-    login_url: app_Log_url 
+    login_url: app_Log_url
 }
 
 

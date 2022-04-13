@@ -23,7 +23,7 @@ let verify = async (ctx, next) => {
             "name": `${ResBody.data.name}`,
             'creTime': `${new Date().toJSON()}`
         });
-    }else{
+    } else {
         ctx.body = failed
     }
     await next()
@@ -48,7 +48,7 @@ let health = async (ctx, next) => {
                 // push 
                 config_file.push(ctx.info)
                 // fill
-                fs.writeFile(path.resolve(__dirname,'./user/user.json'), jsonFormat(config_file), { encoding: 'utf-8', flag: 'w' }, err => {
+                fs.writeFile(path.resolve(__dirname, './user/user.json'), jsonFormat(config_file), { encoding: 'utf-8', flag: 'w' }, err => {
                     if (err) console.log(err);
                 })
                 ctx.body = done
@@ -64,10 +64,10 @@ let health = async (ctx, next) => {
     }
 }
 let signCheck = async (ctx, next) => {
-    let config_file = JSON.parse(fs.readFileSync(path.resolve(__dirname,'./user/userMain.json'), { encoding: 'utf-8', flag: 'r' }))
+    let config_file = JSON.parse(fs.readFileSync(path.resolve(__dirname, './user/userMain.json'), { encoding: 'utf-8', flag: 'r' }))
     if (!config_file.some(itme => itme.stuCode == ctx.info.stuCode)) {
         config_file.push(ctx.info)
-        fs.writeFile(path.resolve(__dirname,'./user/userMain.json'), jsonFormat(config_file), { encoding: 'utf-8', flag: "w" }, err => {
+        fs.writeFile(path.resolve(__dirname, './user/userMain.json'), jsonFormat(config_file), { encoding: 'utf-8', flag: "w" }, err => {
             if (err) console.log(err);
         })
         ctx.body = done

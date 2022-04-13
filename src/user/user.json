@@ -3,26 +3,31 @@
         "user": "author",
         "stuCode": "202005619",
         "las6": "193614",
-        "creTime": "0000-00-00"
+        "creTime": "0000-00-00",
+        "isEnable":true
     },
     {
         "stuCode": "202003324",
         "las6": "30541X",
-        "creTime": "2022-04-03T10:18:32.416Z"
+        "creTime": "2022-04-03T10:18:32.416Z",
+        "isEnable":false
     },
     {
         "stuCode": "202005617",
         "las6": "122419",
-        "creTime": "2022-04-03T10:24:11.232Z"
+        "creTime": "2022-04-03T10:24:11.232Z",
+        "isEnable":false
     },
     {
         "stuCode": "202005451",
         "las6": "05421X",
-        "creTime": "2022-04-03T10:32:20.422Z"
+        "creTime": "2022-04-03T10:32:20.422Z",
+        "isEnable":false
     },
     {
         "stuCode": "202005469",
         "las6": "062712",
-        "creTime": "2022-04-03T10:32:55.878Z"
+        "creTime": "2022-04-03T10:32:55.878Z",
+        "isEnable":false
     }
 ]
