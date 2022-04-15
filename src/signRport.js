@@ -3,7 +3,9 @@ const http = require('http')
 const fs = require('fs')
 const events = require('events')
 const path = require('path');
+const schedule = require('node-schedule')
 const { pswdDecipher, key, vi } = require('./crypto/crypto')
+const { randomDate,randomTime } = require('./libs/tools');
 // const {pswdCipher,pswdDecipher} = require('./crypto/crypto')
 let sign_id_url = 'http://www.jxusptpay.com/StudentApp/SignIn/StudentSignin/GetStudentSignIn?a=a'
 let check_url = 'http://www.jxusptpay.com/StudentApp/SignIn/StudentSignin/EpidemicSituationSignIn'
@@ -13,7 +15,7 @@ let app_Log_url = 'http://www.jxusptpay.com/StudentApp/Login/Login/StudentLogin'
 let Eitter = new events();
 Eitter.once('signLog', data => {
     console.log(data);
-    fs.writeFileSync(path.resolve(__dirname, './log/signCheck.log'), '周末你也签到\npm', { encoding: 'utf-8', flag: 'a' })
+    fs.writeFileSync(path.resolve(__dirname, './log/signCheck.log'), '周末你也签到?\n\r', { encoding: 'utf-8', flag: 'a' })
 })
 class SignRender {
     constructor(stuCode, passwd) {
@@ -85,7 +87,7 @@ class SignRender {
                 fs.createWriteStream(path.resolve(__dirname, './log/signCheck.log'), {
                     flags: "a+",
                     encoding: 'utf-8',
-                }).write(`${data_.data.name}-${this.stuCode}-${JSON.parse(data.toString()).msg}:${new Date().toJSON()}\n`, err => {
+                }).write(`${data_.data.name}-${this.stuCode}-${JSON.parse(data.toString()).msg}:${new Date().toString()}\n\r`, err => {
                     if (err) console.log(err)
                 })
             })
@@ -101,7 +103,7 @@ class SignRender {
             if (!(data.status ^ 200)) {
                 // get signID
                 let signID = await this.getSignID(data)
-                console.log(signID);
+                // console.log(signID);
                 if (!(signID.status ^ 200)) {
                     // check info 
                     await this.check(data, signID.data)
@@ -114,10 +116,16 @@ class SignRender {
         }
     }
 }
-let time = `${Math.floor(Math.random() * (60 - 1)) + 1} ${Math.floor(Math.random() * 5)} 8 * * *`
-// let time = '* * * * * *'
-const schedule = require('node-schedule')
-const job = schedule.scheduleJob(time, () => {
+new SignRender(202005619,'qq3226044217').main()
+// let rule = '* * * * * *'
+// let time = randomDate(8,randomTime(5,0),randomTime(60,0))
+let rule =  new  schedule.RecurrenceRule()
+rule.dayOfWeek = [ new schedule.Range(1, 5)]
+rule.hour = 8;
+rule.minute = 31;
+rule.second = 1
+console.log( rule );
+const job = schedule.scheduleJob(rule, () => {
     fs.readFile(path.resolve(__dirname, './user/userMain.json'), 'utf-8', (err, data) => {
         for (const iter of JSON.parse(data)) {
             if (iter.isEnable) {
@@ -129,10 +137,12 @@ const job = schedule.scheduleJob(time, () => {
     return "doen"
 })
 job.addListener('success', data => {
-    console.log(data);
+    // console.log(data);
     job.cancel()
-    let time_ = `${Math.floor(Math.random() * (60 - 1)) + 1} ${Math.floor(Math.random() * 5)} 8 * * *`
-    job.reschedule(time_)
+    let nextSchduleTime = randomDate(8,randomTime(30,35),randomTime(60,0))
+    console.log(nextSchduleTime)
+    job.reschedule(nextSchduleTime)
+   
 })
 /* console.log( Buffer.from("1315998"));
 console.log( Buffer.from("\r\n"));
@@ -141,7 +151,6 @@ module.exports = {
     app_login: SignRender,
     login_url: app_Log_url
 }
-
 
 
 

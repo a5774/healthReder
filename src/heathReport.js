@@ -1,9 +1,10 @@
 //power_by_laofang
-// const dotenv = require('dotenv')
-// dotenv.config()
 const fs = require('fs')
 const https = require('https')
 const path = require('path')
+const { randomDate,randomTime } = require('./libs/tools')
+const schedule = require('node-schedule')
+const { join } = require('path')
 // const {app_login,login_url} = require('./signRport')
 let Repurl = 'https://www.jxusptpay.com/SpReportData/reportdata/report'
 let Logurl = 'https://www.jxusptpay.com/SpReportData/reportdata/login'
@@ -100,7 +101,7 @@ class Health {
             "isContactPatient": data.isContactHubeiBack,
             "othercase": `${data.othercase}`,
             "verifyCode": `${verifyCode}`,
-            "reporttime": `${data.opttime?.split(' ')[0] ?? new Date().toJSON().split('T')[0]}`,
+            "reporttime": `${data.opttime?.split(' ')[0] ?? new Date().toString().split('T')[0]}`,
             "morTem": data.morTem,
             "illsymptom": data.illsymptom,
             "quarantine": data.quarantine,
@@ -124,6 +125,7 @@ class Health {
         }, res => {
             res.setEncoding('utf-8')
             res.on('data', (data_) => {
+                // console.log(data_);
                 let config_main = JSON.parse(fs.readFileSync(path.resolve(__dirname, './user/userMain.json'), { encoding: 'utf-8', flag: "r" }))
                 let user = config_main.find(self => {
                     return self.stuCode == this.studentCode
@@ -133,7 +135,7 @@ class Health {
                 fs.createWriteStream(path.resolve(__dirname, './log/healthSub.log'), {
                     flags: "a+",
                     encoding: 'utf-8',
-                }).write(`${user ? user.name : '某个不透露名字的小伙子'}-${this.studentCode}-${JSON.parse(data_.toString()).msg}-${new Date().toJSON()}\n\r`, err => {
+                }).write(`${user ? user.name : '某个不透露名字的小伙子'}-${this.studentCode}-${JSON.parse(data_.toString()).msg}-${new Date().toString()}\n\r`, err => {
                     if (err) console.log(err)
                 })
             })
@@ -164,21 +166,24 @@ class Health {
             console.log(err);
         }
     }
+
 }
 // time 
 // let time = '* * * * * *'
-// only once 
-let time = `${Math.floor(Math.random() * (30))} * 8 * * *`
-const schedule = require('node-schedule')
-const job = schedule.scheduleJob(time, () => {
+// let time = '1 5 8 * * *'
+let time = randomDate(8,randomTime(5,0),randomTime(60,0))
+// console.log( time );
+const job = schedule.scheduleJob(time, (currentTime) => {
     fs.readFile(path.resolve(__dirname, './user/user.json'), 'utf-8', (err, data) => {
         for (const iter of JSON.parse(data)) {
             if (iter.isEnable) {
+                // console.log(iter.stuCode);
                 new Health(iter.stuCode, iter.las6)
             }
         }
     })
-    return "doen"
+    // Number:valueof 
+    return currentTime[Symbol.toPrimitive]('number')
 })
 // next schedule
 // console.log(job.nextInvocation() );
@@ -186,10 +191,24 @@ job.addListener('success', data => {
     // data is schedule callback  return value 
     // if success then cancel crrent schedule
     job.cancel()
-    let time_ = `${Math.floor(Math.random() * (60 - 1)) + 1} ${Math.floor(Math.random() * 5)} 8 * * *`
-    // console.log(time_);
-    // restart schedule with new time
-    console.log(job.reschedule(time_));//true
+    let nextSchduleTime = randomDate(8,randomTime(5,0),randomTime(60,0))
+    job.reschedule(nextSchduleTime)
+    // plan random
+   /*  for (const Time of tools.TimeParse(data)) {
+            // console.log(Time);
+            if(Time.isUsable){
+                // restart schedule with new time
+                console.log(job.reschedule(Time.nextScheduleTime));//true
+                break;
+            }
+    }
+ */
+    // constant plan 
+    /* let Times = require('./constant/constantTime.json')
+    let time = Reflect.get(Times,Math.floor(Math.random() * (Times.length)))
+    Health.prototype.toLocalUnixStampCron(time,null)  */
+
+    
 })
 
 // 使用require将无法实时读写
@@ -222,3 +241,4 @@ require('http').OutgoingMessage
 require('http').ClientRequest
 require('http').ServerResponse  
 */
+
