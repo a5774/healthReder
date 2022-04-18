@@ -73,8 +73,8 @@ class SignRender {
     async check(data_, signID) {
         // console.log( signID.id,signID.itemId);
         let form_data = new FormData({ maxDataSize: 4096 })
-        form_data.append("signinId", `${signID.id}`)
-        form_data.append("itemId", `${signID.itemId}`)
+        form_data.append("signinId", `${signID.data.id}`)
+        form_data.append("itemId", `${signID.data.itemId}`)
         let req = http.request(check_url, {
             method: "POST",
             headers: {
@@ -99,14 +99,14 @@ class SignRender {
         try {
             // login get cookie 
             let data = await this.getResBody();
-            console.log(data);
+            // console.log(data);
             if (!(data.status ^ 200)) {
                 // get signID
                 let signID = await this.getSignID(data)
                 // console.log(signID);
                 if (!(signID.status ^ 200)) {
                     // check info 
-                    await this.check(data, signID.data)
+                    await this.check(data, signID)
                 } else {
                     Eitter.emit('signLog', signID)
                 }
@@ -116,14 +116,14 @@ class SignRender {
         }
     }
 }
-new SignRender(202005619,'qq3226044217').main()
-// let rule = '* * * * * *'
+// new SignRender(202005619,'qq3226044217').main()
+let rule = '* * * * * *'
 // let time = randomDate(8,randomTime(5,0),randomTime(60,0))
-let rule =  new  schedule.RecurrenceRule()
+/* let rule =  new  schedule.RecurrenceRule()
 rule.dayOfWeek = [ new schedule.Range(1, 5)]
 rule.hour = 8;
 rule.minute = 31;
-rule.second = 1
+rule.second = 1 */
 console.log( rule );
 const job = schedule.scheduleJob(rule, () => {
     fs.readFile(path.resolve(__dirname, './user/userMain.json'), 'utf-8', (err, data) => {

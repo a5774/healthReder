@@ -4,7 +4,6 @@ const https = require('https')
 const path = require('path')
 const { randomDate,randomTime } = require('./libs/tools')
 const schedule = require('node-schedule')
-const { join } = require('path')
 // const {app_login,login_url} = require('./signRport')
 let Repurl = 'https://www.jxusptpay.com/SpReportData/reportdata/report'
 let Logurl = 'https://www.jxusptpay.com/SpReportData/reportdata/login'
@@ -169,15 +168,15 @@ class Health {
 
 }
 // time 
-// let time = '* * * * * *'
+let time = '* * * * * *'
 // let time = '1 5 8 * * *'
-let time = randomDate(8,randomTime(5,0),randomTime(60,0))
+// let time = randomDate(8,randomTime(5,0),randomTime(60,0))
 // console.log( time );
 const job = schedule.scheduleJob(time, (currentTime) => {
     fs.readFile(path.resolve(__dirname, './user/user.json'), 'utf-8', (err, data) => {
         for (const iter of JSON.parse(data)) {
             if (iter.isEnable) {
-                // console.log(iter.stuCode);
+                console.log(iter.stuCode);
                 new Health(iter.stuCode, iter.las6)
             }
         }
