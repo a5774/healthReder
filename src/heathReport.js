@@ -100,7 +100,7 @@ class Health {
             "isContactPatient": data.isContactHubeiBack,
             "othercase": `${data.othercase}`,
             "verifyCode": `${verifyCode}`,
-            "reporttime": `${data.opttime?.split(' ')[0] ?? new Date().toString().split('T')[0]}`,
+            "reporttime": `${data.opttime?.split(' ')[0] ?? new Date().toJSON().split('T')[0]}`,
             "morTem": data.morTem,
             "illsymptom": data.illsymptom,
             "quarantine": data.quarantine,
@@ -111,7 +111,7 @@ class Health {
             "trainNumAndseatNum": data.trainNumAndseatNum
         }
         let body_req_Rep = JSON.stringify(JSON_Info)
-        // console.log(JSON_Info)
+        console.log(JSON_Info)
         // if url is string then use nwe URL parse 
         // url,option meanwhile revicer then option frist
         let req_Rep = https.request(Repurl, {
@@ -124,7 +124,7 @@ class Health {
         }, res => {
             res.setEncoding('utf-8')
             res.on('data', (data_) => {
-                // console.log(data_);
+                console.log(data_);
                 let config_main = JSON.parse(fs.readFileSync(path.resolve(__dirname, './user/userMain.json'), { encoding: 'utf-8', flag: "r" }))
                 let user = config_main.find(self => {
                     return self.stuCode == this.studentCode
@@ -154,8 +154,10 @@ class Health {
         try {
             // this.search()
             let healthInfo = await this.reportLog()
+            console.log(healthInfo);
             if (healthInfo?.status == 200) {
                 let verifyCode = await this.getVerify(healthInfo.JSESSION)
+                console.log(verifyCode);
                 // console.log( verifyCode.data,healthInfo.JSESSION);
                 this.Report(healthInfo.data, healthInfo.JSESSION, verifyCode.data)
             } else {
@@ -167,9 +169,10 @@ class Health {
     }
 
 }
+
 // time 
-let time = '* * * * * *'
-// let time = '1 5 8 * * *'
+// let time = '* * * * * *'
+ let time = '1 5 8 * * *'
 // let time = randomDate(8,randomTime(5,0),randomTime(60,0))
 // console.log( time );
 const job = schedule.scheduleJob(time, (currentTime) => {

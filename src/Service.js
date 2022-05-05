@@ -8,12 +8,11 @@ const { app_login, app_Log_url } = require('./signRport')
 const path = require('path')
 const jsonFormat = require('json-format')
 const { pswdCipher, key, vi } = require('./crypto/crypto')
-const { DONE,EXIST,FAILED } = require('./constant/verifyConstant')
+const { DONE, EXIST, FAILED } = require('./constant/verifyConstant')
+
 let app = new Koa()
 let router = new Router({ prefix: "/info" })
 let verify = async (ctx, next) => {
-    // embed
-    ctx['info'] = ctx.request.body
     // rightfull verify 
     let ResBody = await new app_login(ctx.info.stuCode, ctx.info.las6).getResBody()
     if (ResBody.status == 200) {
@@ -28,11 +27,13 @@ let verify = async (ctx, next) => {
 }
 let aes_128_cbc_crypto = async (ctx, next) => {
     ctx.info.las6 = pswdCipher(ctx['info'].las6, key, vi)
-    console.log(ctx.info);
+    // console.log(ctx.info);
     await next()
 }
 let health = async (ctx, next) => {
     // console.log(ctx.request.rawBody);
+    // embed
+    ctx['info'] = ctx.request.body
     if (ctx.info.flag) {
         // Inherent format
         if (ctx.info.stuCode.length == 9 && ctx.info.las6.length == 6) {
@@ -40,7 +41,7 @@ let health = async (ctx, next) => {
                 'creTime': `${new Date().toString()}`,
             });
             // readFileSync config_file is must value 
-            let config_file = JSON.parse(fs.readFileSync(path, { encoding: 'utf-8', flag: 'r' }))
+            let config_file = JSON.parse(fs.readFileSync(path.resolve(__dirname, './user/user.json'), { encoding: 'utf-8', flag: 'r' }))
             // config is exist 
             if (!config_file.some(itme => itme.stuCode == ctx.info.stuCode)) {
                 // push 
@@ -55,7 +56,7 @@ let health = async (ctx, next) => {
             }
 
         } else {
-            ctx.body =FAILED
+            ctx.body = FAILED
         }
     } else {
         await next()
@@ -72,16 +73,39 @@ let signCheck = async (ctx, next) => {
     } else {
         ctx.body = EXIST
     }
+    // 匹配next全局路由
+    await next()
 }
-
+// koa.use Only one middleware can be loaded
 app.use(koa_static('./static', { extensions: ['js', 'html'] }))
 router.post('/', koa_bodyparser({
     enableTypes: ['json', 'form']
-}), verify, aes_128_cbc_crypto, health, signCheck)
+}), health, verify, aes_128_cbc_crypto, signCheck)
 
 app.use(router.routes())
 app.use(router.allowedMethods())
+
+
+let Notfound = new Router()
+// 以路由实例位置匹配
+Notfound.all(/[\s\S]*/, async (ctx, next) => {
+    ctx.req.on('end',()=>{
+        console.log('end')
+    })
+    console.log("notfound");
+    ctx.attachment('notfoundfile', {
+        type: 'inline',
+        fallback: true
+    })
+    ctx.type = 'text/html'
+    // 处理完成所有middleware后执行handlerResponse()req.write()触发req.end()
+    // return fnMiddleware(ctx).then(handleResponse).catch(onerror);
+    // 多个ctx.body将被覆盖
+    ctx.body =  fs.createReadStream('./static/NotFound.html')
+})
+app.use(Notfound.routes())
 app.listen(9090, '0.0.0.0', () => {
     console.log("Start_prot_9090");
 })
+
 

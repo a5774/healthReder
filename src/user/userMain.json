@@ -13,7 +13,7 @@
 		"flag": false,
 		"name": "谢地市",
 		"creTime": "2022-04-11T03:07:24.083Z",
-		"isEnable":false
+		"isEnable":true
 	},
 	{
 		"stuCode": "202003324",
@@ -21,7 +21,7 @@
 		"flag": false,
 		"name": "李海东",
 		"creTime": "2022-04-11T03:07:47.534Z",
-		"isEnable":false
+		"isEnable":true
 	},
 	{
 		"stuCode": "202005617",
@@ -35,6 +35,6 @@
 		"stuCode": "202005217",
 		"las6": "2c69c69adb26f9c147c2003f143b595b",
 		"flag": false,
-		"isEnable":false
+		"isEnable":true
 	}
 ]

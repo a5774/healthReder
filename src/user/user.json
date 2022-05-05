@@ -22,12 +22,12 @@
         "stuCode": "202005451",
         "las6": "05421X",
         "creTime": "2022-04-03T10:32:20.422Z",
-        "isEnable":false
+        "isEnable":true
     },
     {
         "stuCode": "202005469",
         "las6": "062712",
         "creTime": "2022-04-03T10:32:55.878Z",
-        "isEnable":false
+        "isEnable":true
     }
 ]
